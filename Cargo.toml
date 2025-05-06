@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aes-gcm = "0.10.3"
 argon2 = { version = "0.5.3", features = ["password-hash"] }
 rand_core = { version = "0.6.3", features = ["getrandom"] }
 rfd = "0.15.3"

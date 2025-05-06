@@ -3,8 +3,10 @@ import { Button, VerticalBox } from "std-widgets.slint";
 export component AppWindow inherits Window {
     in-out property <string> file_path;
     callback choose-file();
+    callback encrypt();
+    callback decrypt();
     
-    height: 50px;
+    height: 200px;
     width: 200px;
 
     VerticalBox {
@@ -12,12 +14,31 @@ export component AppWindow inherits Window {
             text: file_path;
         }
 
-        Button {
-            width: 100px;
-            height: 20px;
-            text: "Choose File";
-            clicked => {
-                root.choose-file();
+        VerticalBox {
+            Button {
+                width: 100px;
+                accessible-role: AccessibleRole.button;
+                height: 40px;
+                text: "Choose File";
+                clicked => {
+                    root.choose-file();
+                }
+            }
+            Button {
+                width: 100px;
+                height: 40px;
+                text: "Encrypt";
+                clicked => {
+                    root.encrypt();
+                }
+            }
+            Button {
+                width: 100px;
+                height: 40px;
+                text: "Decrypt";
+                clicked => {
+                    root.decrypt();
+                }
             }
         }
     }
