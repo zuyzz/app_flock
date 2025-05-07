@@ -3,6 +3,8 @@
 /target/
 /.vscode/
 
+auth_data.json
+
 # Alternative VCS systems
 /.jj/
 /.hg/
