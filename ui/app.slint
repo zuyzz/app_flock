@@ -1,66 +1,126 @@
-import { Button, VerticalBox, LineEdit } from "std-widgets.slint";
+import { Button, VerticalBox, LineEdit, HorizontalBox, ListView } from "std-widgets.slint";
+import { PasswordInput } from "app-widgets.slint";
 
 export component AppWindow inherits Window {
-    in-out property <string> file_path;
+    in-out property <string> current_file_path;
+    in-out property <[string]> reccent_file_paths;
+    callback check-file();
     callback choose-file();
-    callback encrypt();
-    callback decrypt();
-    
-    height: 200px;
-    width: 200px;
+    callback open-file();
+    callback lock-file();
+    callback unlock-file();
 
-    VerticalBox {
-        Text {
-            text: file_path;
+    width: 400px;
+
+    HorizontalBox {
+        VerticalBox {
+            width: 70%;
+
+            current_file := Rectangle {
+                path := Rectangle {
+                    x: 0px;
+                    width: parent.width - choose-button.width - 10px;
+                    height: 30px;
+                    border-color: whitesmoke;
+                    border-width: 1px;
+                    clip: true;
+
+                    Text {
+                        width: 100%;
+                        text: current_file_path;
+                    }
+                }
+
+                choose-button := Button {
+                    x: parent.width - self.width;
+                    width: path.height + 20px;
+                    height: path.height;
+                    icon: @image-url("../assets/open_folder.png");
+                }
+            }
+
+            VerticalLayout {
+                spacing: 5px;
+
+                Text {
+                    vertical-alignment: bottom;
+                    height: 20px;
+                    text: "Recent file";
+                }
+                
+                recent_file := Rectangle {
+                    width: 100%;
+                    border-color: whitesmoke;
+                    border-width: 1px;
+    
+                    ListView {
+                        for p in reccent_file_paths : Button {
+                            text: p;
+                            
+                            clicked => {
+                                root.current_file_path = p;
+                                check-file();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        VerticalBox {
+        buttons := VerticalBox {
+            width: 100px;
+
             Button {
-                width: 100px;
-                accessible-role: AccessibleRole.button;
+                width: 100%;
                 height: 40px;
-                text: "Choose File";
+                text: "Open";
                 clicked => {
-                    root.choose-file();
+                    root.open-file();
                 }
             }
+
             Button {
-                width: 100px;
+                width: 100%;
                 height: 40px;
-                text: "Encrypt";
+                text: "Lock";
                 clicked => {
-                    root.encrypt();
+                    root.lock-file();
                 }
             }
+
             Button {
-                width: 100px;
+                width: 100%;
                 height: 40px;
-                text: "Decrypt";
+                text: "Unlock";
                 clicked => {
-                    root.decrypt();
+                    root.unlock-file();
                 }
             }
         }
     }
+    
 }
 
 
 export component AuthWindow inherits Window {
-    height: 50px;
-    width: 200px;
-
-    out property <string> input_password;
+    height: 40px;
+    width: 300px;
 
     callback authenticate(string);
     
-    LineEdit {
+    PasswordInput {
+        width: 80%;
+        height: 80%;
+        background: lightblue;
         placeholder-text: "Enter locker password";
-        input-type: password;
-        edited(text) => {
-            root.input_password = text;
-        }
+        placeholder-text-color: blue;
+        input-text-color: white;
+        border-color: blue;
+        border-width: 1px;
+
         accepted(text) => {
-            root.authenticate(text);
+            authenticate(text);
         }
     }
+
 }

@@ -27,14 +27,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         let app_handle = app.as_weak();
         
         move |password| {
-            let app = app_handle.upgrade().unwrap();
-            let auth = auth_handle.upgrade().unwrap();
+            let app = app_handle.unwrap();
+            let auth = auth_handle.unwrap();
             
             match load_auth_data() {
                 Ok(auth_data) => {
                     if verify_password(password.as_str(), &auth_data) {
                         app.show().unwrap();
                         auth.hide().unwrap();
+                        drop(auth);
                     }
                 },
                 Err(_) => {
@@ -47,22 +48,38 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
     
+    app.on_check_file({
+        let app_handle = app.as_weak();
+        
+        move || {
+            todo!();
+        }
+    });
+    
     app.on_choose_file({
         let app_handle = app.as_weak();
         
         move || {
             let app = app_handle.unwrap();
-            app.set_file_path(SharedString::from(choose_file().unwrap()));
+            app.set_current_file_path(SharedString::from(choose_file().unwrap()));
+        }
+    });
+
+    app.on_open_file({
+        let app_handle = app.as_weak();
+        
+        move || {
+            todo!();
         }
     });
     
-    app.on_encrypt({
+    app.on_lock_file({
         let app_handle = app.as_weak();
         
         move || {
             let app = app_handle.unwrap();
             
-            let file_path = app.get_file_path().to_string();
+            let file_path = app.get_current_file_path().to_string();
             let file_content = read_file_content(&file_path);
             let key = generate_key(&load_auth_data().unwrap());
             if let Ok(encrypted_content) = encrypt(&key, &file_content) {
@@ -71,13 +88,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
     
-    app.on_decrypt({
+    app.on_unlock_file({
         let app_handle = app.as_weak();
         
         move || {
             let app = app_handle.unwrap();
             
-            let file_path = app.get_file_path().to_string();
+            let file_path = app.get_current_file_path().to_string();
             let file_content = read_file_content(&file_path);
             let key = generate_key(&load_auth_data().unwrap());
             if let Ok(decrypted_content) = decrypt(&key, &file_content) {
