@@ -4,7 +4,6 @@ import { PasswordInput } from "app-widgets.slint";
 export component AppWindow inherits Window {
     in-out property <string> current_file_path;
     in-out property <[string]> reccent_file_paths;
-    callback check-file();
     callback choose-file();
     callback open-file();
     callback lock-file();
@@ -36,6 +35,10 @@ export component AppWindow inherits Window {
                     width: path.height + 20px;
                     height: path.height;
                     icon: @image-url("../assets/open_folder.png");
+
+                    clicked => {
+                        root.choose-file();
+                    }
                 }
             }
 
@@ -59,7 +62,6 @@ export component AppWindow inherits Window {
                             
                             clicked => {
                                 root.current_file_path = p;
-                                check-file();
                             }
                         }
                     }
