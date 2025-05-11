@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::Read;
 use std::{error::Error, io::Write};
 use flock::crypto::{decrypt, encrypt};
-use flock::secure::{derive_key, hash_secret, random_salt, verify_secret};
+use flock::secure::{derive_key, get_secret, hash_secret, random_salt, store_secret, verify_secret};
 use flock::utils::file::{get_path, read_file_content, select_file, write_file_content};
 use serde::{Deserialize, Serialize};
 use slint::{SharedString, Weak};
@@ -18,15 +18,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let auth_handle = auth.as_weak();
     let app_handle = app.as_weak();
-    
+
     auth.on_authenticate({
         let auth = Weak::clone(&auth_handle).unwrap();
         let app = Weak::clone(&app_handle).unwrap();
         move |secret| {
-            
             if let Ok(auth_data) = load_auth_data() {
                 // log in
                 if let Ok(_) = verify_secret(secret.as_str(), &auth_data.secret_hash) {
+                    store_secret(secret.as_str());
                     app.show().unwrap();
                     auth.hide().unwrap();
                 }
@@ -35,6 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // register
                 let salt = random_salt();
                 if let Ok(_) = save_auth_data(secret.as_str(), salt.as_str()) {
+                    store_secret(secret.as_str());
                     app.show().unwrap();
                     auth.hide().unwrap();
                 }
@@ -64,9 +65,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         move || {
             let file_path = app.get_current_file_path();
             let file_content = read_file_content(file_path.as_str());
-            let auth_data = load_auth_data().unwrap();
-            let key = derive_key(&auth_data.secret_hash, &auth_data.salt);
-            if let Ok(encrypted_data) = encrypt(&key, &file_content) {
+
+            if let Ok(encrypted_data) = encrypt(&file_content) {
                 write_file_content(&file_path, &encrypted_data);
             }
         }
@@ -77,9 +77,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         move || {
             let file_path = app.get_current_file_path();
             let file_content = read_file_content(file_path.as_str());
-            let auth_data = load_auth_data().unwrap();
-            let key = derive_key(&auth_data.secret_hash, &auth_data.salt);
-            if let Ok(decrypted_content) = decrypt(&key, &file_content) {
+
+            if let Ok(decrypted_content) = decrypt(&file_content) {
                 write_file_content(&file_path, &decrypted_content);
             }
         }
