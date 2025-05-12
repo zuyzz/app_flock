@@ -8,12 +8,14 @@ edition = "2021"
 [dependencies]
 aes-gcm = "0.10.3"
 argon2 = { version = "0.5.3", features = ["password-hash"] }
+opener = "0.7.2"
 rand_core = { version = "0.6.3", features = ["getrandom"] }
 rfd = "0.15.3"
 secrecy = "0.10.3"
 serde = { version = "1.0.219", features = ["derive"]}
 serde_json = "1.0.140"
 slint = "1.11.0"
+tempfile = "3.20.0"
 
 [build-dependencies]
 slint-build = "1.8.0"

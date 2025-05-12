@@ -1,5 +1,7 @@
 pub mod file {
-    use std::{fs::{self, File}, io::Write, path::PathBuf};
+    use std::{error::Error, fs::{self, File}, io::Write, path::{Path, PathBuf}};
+
+    use tempfile::NamedTempFile;
     
     pub fn read_file_content(file_path: &str) -> Vec<u8> {
         fs::read(file_path).expect("Failed to read file")
@@ -21,5 +23,27 @@ pub mod file {
     pub fn get_path(file: &PathBuf) -> String {
         file.display()
             .to_string()
+    }
+
+    pub fn get_file_extension(path: &str) -> Option<String> {
+        Path::new(path).extension()
+            .and_then(|ext| ext.to_str())
+            .map(|s| s.to_string())
+    }
+
+    
+    pub fn open_temp_file(data: &[u8], extension: &str) -> Result<(), Box<dyn Error>> {
+        let suffix = format!(".{extension}");
+        let mut temp_file = NamedTempFile::with_suffix(suffix)?;
+        temp_file.write_all(data)?;
+
+        let temp_path = temp_file
+            .into_temp_path()
+            .keep()?;
+
+        opener::open(&temp_path)?;
+        // std::fs::remove_file(&temp_path)?;
+
+        Ok(())
     }
 }

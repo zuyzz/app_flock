@@ -5,8 +5,8 @@ use std::fs::File;
 use std::io::Read;
 use std::{error::Error, io::Write};
 use flock::crypto::{decrypt, encrypt};
-use flock::secure::{derive_key, get_secret, hash_secret, random_salt, store_secret, verify_secret};
-use flock::utils::file::{get_path, read_file_content, select_file, write_file_content};
+use flock::secure::{hash_secret, random_salt, store_secret, verify_secret};
+use flock::utils::file::{get_file_extension, get_path, open_temp_file, read_file_content, select_file, write_file_content};
 use serde::{Deserialize, Serialize};
 use slint::{SharedString, Weak};
 
@@ -54,9 +54,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     app.on_open_file({
-        let _app = Weak::clone(&app_handle).unwrap();
+        let app = Weak::clone(&app_handle).unwrap();
         move || {
-            // temporary open
+            let file_path = app.get_current_file_path();
+            let file_path = file_path.as_str();
+            let extension = get_file_extension(file_path).unwrap_or(String::new());
+            
+            let data = read_file_content(file_path);
+            if let Ok(decrypt_data) = decrypt(&data) {
+                open_temp_file(&decrypt_data, &extension);
+            } else {
+                open_temp_file(&data, &extension);
+            }
         }
     });
     
